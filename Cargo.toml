@@ -1,0 +1,10 @@
+[package]
+name = "sample-consensus"
+version = "0.1.0"
+authors = ["Geordon Worley <vadixidav@gmail.com>"]
+edition = "2018"
+documentation = "https://docs.rs/sample-consensus/"
+repository = "https://github.com/rust-photogrammetry/sample-consensus"
+keywords = ["ransac", "sample", "consensus", "model", "residual"]
+categories = ["algorithms", "no-std", "science", "science::robotics", "simulation"]
+license = "MIT"
