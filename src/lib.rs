@@ -1,5 +1,7 @@
 #![no_std]
 
+type EstimatorData<E> = <<E as Estimator>::Model as Model>::Data;
+
 /// A model is a best-fit of at least some of the underlying data. You can compute residuals in respect to the model.
 pub trait Model {
     type Data;
@@ -27,11 +29,8 @@ pub trait Model {
 /// An `Estimator` is able to create a model that best fits a set of data.
 /// It is also able to determine the residual error each data point contributes in relation to the model.
 pub trait Estimator {
-    /// The data for which the model is being estimated.
-    type Data;
-
     /// `Model` is the model which is estimated from the underlying data
-    type Model;
+    type Model: Model;
 
     /// The minimum number of samples that the estimator can estimate a model from.
     const MIN_SAMPLES: usize;
@@ -46,19 +45,37 @@ pub trait Estimator {
     /// an equation has an imaginary answer, or non-causal events happen, then a model may not be produced.
     fn estimate<I>(&self, data: I) -> Option<Self::Model>
     where
-        I: Iterator<Item = Self::Data>;
+        I: Iterator<Item = EstimatorData<Self>>;
 }
 
 /// A consensus algorithm extracts a consensus from an underlying model of data.
-pub trait Consensus<D, I, E>
+/// This consensus includes a model of the data and which datapoints fit each model.
+/// It is entirely possible that some data points fit multiple models.
+///
+/// Note that all the consensus methods take a `&mut self`. This allows the consensus to store
+/// state such as an RNG or pre-allocted memory. This means multiple threads will be forced
+/// to create their own `Consensus` instance, which is most efficient.
+pub trait Consensus<E>
 where
-    I: Iterator<Item = D> + Clone,
-    E: Estimator<Data = D>,
+    E: Estimator,
 {
-    /// See [`Estimator::estimate`] for more details on when a model is returned or not.
-    ///
+    /// Iterator over the indices of the inliers in the clonable iterator.
+    type Inliers: Iterator<Item = usize>;
+    /// Iterator over the models and their associated inliers.
+    type ModelInliers: Iterator<Item = (E::Model, Self::Inliers)>;
+
     /// This takes in an estimator and a clonable iterator over the data.
-    ///
-    /// It takes a mutable reference to self to allow it to consume randomness from an RNG.
-    fn estimate<R>(&mut self, estimator: &E, data: I) -> Option<E::Model>;
+    /// It returns `None` if no valid model could be found for the data and
+    /// `Some` if a model was found.
+    fn model<I>(&mut self, estimator: &E, data: I) -> Option<E::Model>
+    where
+        I: Iterator<Item = EstimatorData<E>> + Clone;
+
+    /// This takes in an estimator and a clonable iterator over the data.
+    /// It returns an iterator over all of the models and all of the inliers
+    /// that are consistent with that model. Every point that is not an
+    /// inlier of a given model is considered an outlier of that model.
+    fn models<I>(&mut self, estimator: &E, data: I) -> Self::ModelInliers
+    where
+        I: Iterator<Item = EstimatorData<E>> + Clone;
 }
