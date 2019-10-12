@@ -1,6 +1,6 @@
 #![no_std]
 
-type EstimatorData<E> = <<E as Estimator>::Model as Model>::Data;
+pub type EstimatorData<E> = <<E as Estimator>::Model as Model>::Data;
 
 /// A model is a best-fit of at least some of the underlying data. You can compute residuals in respect to the model.
 pub trait Model {
