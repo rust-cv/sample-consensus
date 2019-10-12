@@ -23,7 +23,7 @@ pub trait Model {
     ///
     /// If all you wish to do is filter data points out if they are above a certian threshold of error
     /// then the 32-bit float's precision will be no issue for you.
-    fn residual(&self, data: Self::Data) -> f32;
+    fn residual(&self, data: &Self::Data) -> f32;
 }
 
 /// An `Estimator` is able to create a model that best fits a set of data.
@@ -45,7 +45,7 @@ pub trait Estimator {
     /// an equation has an imaginary answer, or non-causal events happen, then a model may not be produced.
     fn estimate<'a, I>(&self, data: I) -> Option<Self::Model>
     where
-        I: Iterator<Item = &'a EstimatorData<Self>>,
+        I: Iterator<Item = &'a EstimatorData<Self>> + Clone,
         EstimatorData<Self>: 'a;
 }
 
