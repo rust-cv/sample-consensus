@@ -64,18 +64,14 @@ where
     /// Iterator over the models and their associated inliers.
     type ModelInliers: Iterator<Item = (E::Model, Self::Inliers)>;
 
-    /// This takes in an estimator and a clonable iterator over the data.
+    /// Takes a slice over the data and an estimator instance.
     /// It returns `None` if no valid model could be found for the data and
     /// `Some` if a model was found.
-    fn model<I>(&mut self, estimator: &E, data: I) -> Option<E::Model>
-    where
-        I: Iterator<Item = EstimatorData<E>> + Clone;
+    fn model(&mut self, estimator: &E, data: &[EstimatorData<E>]) -> Option<E::Model>;
 
-    /// This takes in an estimator and a clonable iterator over the data.
+    /// Takes a slice over the data and an estimator instance.
     /// It returns an iterator over all of the models and all of the inliers
     /// that are consistent with that model. Every point that is not an
     /// inlier of a given model is considered an outlier of that model.
-    fn models<I>(&mut self, estimator: &E, data: I) -> Self::ModelInliers
-    where
-        I: Iterator<Item = EstimatorData<E>> + Clone;
+    fn models(&mut self, estimator: &E, data: &[EstimatorData<E>]) -> Self::ModelInliers;
 }
