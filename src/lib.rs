@@ -43,9 +43,10 @@ pub trait Estimator {
     /// `None` should be returned only if a model is impossible to estimate based on the data.
     /// For instance, if a particle has greater than infinite mass, a point is detected behind a camera,
     /// an equation has an imaginary answer, or non-causal events happen, then a model may not be produced.
-    fn estimate<I>(&self, data: I) -> Option<Self::Model>
+    fn estimate<'a, I>(&self, data: I) -> Option<Self::Model>
     where
-        I: Iterator<Item = EstimatorData<Self>>;
+        I: Iterator<Item = &'a EstimatorData<Self>>,
+        EstimatorData<Self>: 'a;
 }
 
 /// A consensus algorithm extracts a consensus from an underlying model of data.
