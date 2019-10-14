@@ -31,6 +31,8 @@ pub trait Model {
 pub trait Estimator {
     /// `Model` is the model which is estimated from the underlying data
     type Model: Model;
+    /// Iterator over the models produced from the data.
+    type ModelIter: Iterator<Item = Self::Model>;
 
     /// The minimum number of samples that the estimator can estimate a model from.
     const MIN_SAMPLES: usize;
@@ -43,7 +45,7 @@ pub trait Estimator {
     /// `None` should be returned only if a model is impossible to estimate based on the data.
     /// For instance, if a particle has greater than infinite mass, a point is detected behind a camera,
     /// an equation has an imaginary answer, or non-causal events happen, then a model may not be produced.
-    fn estimate<'a, I>(&self, data: I) -> Option<Self::Model>
+    fn estimate<'a, I>(&self, data: I) -> Self::ModelIter
     where
         I: Iterator<Item = &'a EstimatorData<Self>> + Clone,
         EstimatorData<Self>: 'a;
