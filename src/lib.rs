@@ -32,7 +32,7 @@ pub trait Estimator {
     /// `Model` is the model which is estimated from the underlying data
     type Model: Model;
     /// Iterator over the models produced from the data.
-    type ModelIter: Iterator<Item = Self::Model>;
+    type ModelIter: IntoIterator<Item = Self::Model>;
 
     /// The minimum number of samples that the estimator can estimate a model from.
     const MIN_SAMPLES: usize;
@@ -63,9 +63,9 @@ where
     E: Estimator,
 {
     /// Iterator over the indices of the inliers in the clonable iterator.
-    type Inliers: Iterator<Item = usize>;
+    type Inliers: IntoIterator<Item = usize>;
     /// Iterator over the models and their associated inliers.
-    type ModelInliers: Iterator<Item = (E::Model, Self::Inliers)>;
+    type ModelInliers: IntoIterator<Item = (E::Model, Self::Inliers)>;
 
     /// Takes a slice over the data and an estimator instance.
     /// It returns `None` if no valid model could be found for the data and
