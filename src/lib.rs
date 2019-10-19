@@ -22,7 +22,8 @@ pub trait Model {
     ///     - `let sum = estimator.residuals(data).tree_fold1(|a, b| a + b).unwrap_or(0.0)`
     ///
     /// If all you wish to do is filter data points out if they are above a certian threshold of error
-    /// then the 32-bit float's precision will be no issue for you.
+    /// then the 32-bit float's precision will be no issue for you. Most fast RANSAC algorithms
+    /// utilize this approach and score models based only on their inlier count.
     fn residual(&self, data: &Self::Data) -> f32;
 }
 
@@ -52,8 +53,7 @@ pub trait Estimator {
 }
 
 /// A consensus algorithm extracts a consensus from an underlying model of data.
-/// This consensus includes a model of the data and which datapoints fit each model.
-/// It is entirely possible that some data points fit multiple models.
+/// This consensus includes a model of the data and which datapoints fit the model.
 ///
 /// Note that all the consensus methods take a `&mut self`. This allows the consensus to store
 /// state such as an RNG or pre-allocted memory. This means multiple threads will be forced
@@ -64,8 +64,6 @@ where
 {
     /// Iterator over the indices of the inliers in the clonable iterator.
     type Inliers: IntoIterator<Item = usize>;
-    /// Iterator over the models and their associated inliers.
-    type ModelInliers: IntoIterator<Item = (E::Model, Self::Inliers)>;
 
     /// Takes a slice over the data and an estimator instance.
     /// It returns `None` if no valid model could be found for the data and
@@ -73,8 +71,30 @@ where
     fn model(&mut self, estimator: &E, data: &[EstimatorData<E>]) -> Option<E::Model>;
 
     /// Takes a slice over the data and an estimator instance.
+    /// It returns `None` if no valid model could be found for the data and
+    /// `Some` if a model was found. It includes the inliers consistent with the model.
+    fn model_inliers(
+        &mut self,
+        estimator: &E,
+        data: &[EstimatorData<E>],
+    ) -> Option<(E::Model, Self::Inliers)>;
+}
+
+/// See [`Consensus`]. A multi-consensus can handle situations where different subsets of the data are consistent
+/// with different models. This kind of consensus also considers whether a point is part of another orthoganal
+/// model that is known before assuming it is a true outlier. In this situation there are inliers of different
+/// models and then true outliers that are actual erroneous data that should be filtered out.
+pub trait MultiConsensus<E>
+where
+    E: Estimator,
+{
+    /// Iterator over the indices of the inliers in the clonable iterator.
+    type Inliers: IntoIterator<Item = usize>;
+    type Models: IntoIterator<Item = (E::Model, Self::Inliers)>;
+
+    /// Takes a slice over the data and an estimator instance.
     /// It returns an iterator over all of the models and all of the inliers
     /// that are consistent with that model. Every point that is not an
     /// inlier of a given model is considered an outlier of that model.
-    fn models(&mut self, estimator: &E, data: &[EstimatorData<E>]) -> Self::ModelInliers;
+    fn models(&mut self, estimator: &E, data: &[EstimatorData<E>]) -> Self::Models;
 }
