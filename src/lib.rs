@@ -20,7 +20,7 @@ pub trait Model<Data> {
     /// If all you wish to do is filter data points out if they are above a certian threshold of error
     /// then the 32-bit float's precision will be no issue for you. Most fast RANSAC algorithms
     /// utilize this approach and score models based only on their inlier count.
-    fn residual(&self, data: &Data) -> f32;
+    fn residual(&self, data: Data) -> f32;
 }
 
 /// An `Estimator` is able to create a model that best fits a set of data.
@@ -42,10 +42,9 @@ pub trait Estimator<Data> {
     /// `None` should be returned only if a model is impossible to estimate based on the data.
     /// For instance, if a particle has greater than infinite mass, a point is detected behind a camera,
     /// an equation has an imaginary answer, or non-causal events happen, then a model may not be produced.
-    fn estimate<'a, I>(&self, data: I) -> Self::ModelIter
+    fn estimate<I>(&self, data: I) -> Self::ModelIter
     where
-        I: Iterator<Item = &'a Data> + Clone,
-        Data: 'a;
+        I: Iterator<Item = Data> + Clone;
 }
 
 /// A consensus algorithm extracts a consensus from an underlying model of data.
