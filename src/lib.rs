@@ -20,7 +20,7 @@ pub trait Model<Data> {
     /// If all you wish to do is filter data points out if they are above a certian threshold of error
     /// then the 32-bit float's precision will be no issue for you. Most fast RANSAC algorithms
     /// utilize this approach and score models based only on their inlier count.
-    fn residual(&self, data: Data) -> f32;
+    fn residual(&self, data: &Data) -> f32;
 }
 
 /// An `Estimator` is able to create a model that best fits a set of data.
