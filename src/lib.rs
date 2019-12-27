@@ -1,11 +1,7 @@
 #![no_std]
 
-pub type EstimatorData<E> = <<E as Estimator>::Model as Model>::Data;
-
 /// A model is a best-fit of at least some of the underlying data. You can compute residuals in respect to the model.
-pub trait Model {
-    type Data;
-
+pub trait Model<Data> {
     /// Note that the residual error is returned as a 32-bit float. This might be harder to preserve precision with
     /// than a 64-bit float, but it will be faster to perform RANSAC if care is taken to avoid
     /// [round-off error](https://en.wikipedia.org/wiki/Round-off_error)
@@ -24,14 +20,14 @@ pub trait Model {
     /// If all you wish to do is filter data points out if they are above a certian threshold of error
     /// then the 32-bit float's precision will be no issue for you. Most fast RANSAC algorithms
     /// utilize this approach and score models based only on their inlier count.
-    fn residual(&self, data: &Self::Data) -> f32;
+    fn residual(&self, data: &Data) -> f32;
 }
 
 /// An `Estimator` is able to create a model that best fits a set of data.
 /// It is also able to determine the residual error each data point contributes in relation to the model.
-pub trait Estimator {
+pub trait Estimator<Data> {
     /// `Model` is the model which is estimated from the underlying data
-    type Model: Model;
+    type Model: Model<Data>;
     /// Iterator over the models produced from the data.
     type ModelIter: IntoIterator<Item = Self::Model>;
 
@@ -48,8 +44,8 @@ pub trait Estimator {
     /// an equation has an imaginary answer, or non-causal events happen, then a model may not be produced.
     fn estimate<'a, I>(&self, data: I) -> Self::ModelIter
     where
-        I: Iterator<Item = &'a EstimatorData<Self>> + Clone,
-        EstimatorData<Self>: 'a;
+        I: Iterator<Item = &'a Data> + Clone,
+        Data: 'a;
 }
 
 /// A consensus algorithm extracts a consensus from an underlying model of data.
@@ -58,9 +54,9 @@ pub trait Estimator {
 /// Note that all the consensus methods take a `&mut self`. This allows the consensus to store
 /// state such as an RNG or pre-allocted memory. This means multiple threads will be forced
 /// to create their own `Consensus` instance, which is most efficient.
-pub trait Consensus<E>
+pub trait Consensus<E, Data>
 where
-    E: Estimator,
+    E: Estimator<Data>,
 {
     /// Iterator over the indices of the inliers in the clonable iterator.
     type Inliers: IntoIterator<Item = usize>;
@@ -68,25 +64,25 @@ where
     /// Takes a slice over the data and an estimator instance.
     /// It returns `None` if no valid model could be found for the data and
     /// `Some` if a model was found.
-    fn model(&mut self, estimator: &E, data: &[EstimatorData<E>]) -> Option<E::Model>;
+    fn model<I>(&mut self, estimator: &E, data: I) -> Option<E::Model>
+    where
+        I: Iterator<Item = Data> + Clone;
 
     /// Takes a slice over the data and an estimator instance.
     /// It returns `None` if no valid model could be found for the data and
     /// `Some` if a model was found. It includes the inliers consistent with the model.
-    fn model_inliers(
-        &mut self,
-        estimator: &E,
-        data: &[EstimatorData<E>],
-    ) -> Option<(E::Model, Self::Inliers)>;
+    fn model_inliers<I>(&mut self, estimator: &E, data: I) -> Option<(E::Model, Self::Inliers)>
+    where
+        I: Iterator<Item = Data> + Clone;
 }
 
 /// See [`Consensus`]. A multi-consensus can handle situations where different subsets of the data are consistent
 /// with different models. This kind of consensus also considers whether a point is part of another orthoganal
 /// model that is known before assuming it is a true outlier. In this situation there are inliers of different
 /// models and then true outliers that are actual erroneous data that should be filtered out.
-pub trait MultiConsensus<E>
+pub trait MultiConsensus<E, Data>
 where
-    E: Estimator,
+    E: Estimator<Data>,
 {
     /// Iterator over the indices of the inliers in the clonable iterator.
     type Inliers: IntoIterator<Item = usize>;
@@ -96,5 +92,7 @@ where
     /// It returns an iterator over all of the models and all of the inliers
     /// that are consistent with that model. Every point that is not an
     /// inlier of a given model is considered an outlier of that model.
-    fn models(&mut self, estimator: &E, data: &[EstimatorData<E>]) -> Self::Models;
+    fn models<I>(&mut self, estimator: &E, data: I) -> Self::Models
+    where
+        I: Iterator<Item = Data> + Clone;
 }
