@@ -51,7 +51,7 @@ pub trait Estimator<Data> {
 /// This consensus includes a model of the data and which datapoints fit the model.
 ///
 /// Note that all the consensus methods take a `&mut self`. This allows the consensus to store
-/// state such as an RNG or pre-allocted memory. This means multiple threads will be forced
+/// state such as an RNG or pre-allocated memory. This means multiple threads will be forced
 /// to create their own `Consensus` instance, which is most efficient.
 pub trait Consensus<E, Data>
 where
@@ -76,7 +76,7 @@ where
 }
 
 /// See [`Consensus`]. A multi-consensus can handle situations where different subsets of the data are consistent
-/// with different models. This kind of consensus also considers whether a point is part of another orthoganal
+/// with different models. This kind of consensus also considers whether a point is part of another orthogonal
 /// model that is known before assuming it is a true outlier. In this situation there are inliers of different
 /// models and then true outliers that are actual erroneous data that should be filtered out.
 pub trait MultiConsensus<E, Data>
