@@ -2,25 +2,13 @@
 
 /// A model is a best-fit of at least some of the underlying data. You can compute residuals in respect to the model.
 pub trait Model<Data> {
-    /// Note that the residual error is returned as a 32-bit float. This might be harder to preserve precision with
-    /// than a 64-bit float, but it will be faster to perform RANSAC if care is taken to avoid
-    /// [round-off error](https://en.wikipedia.org/wiki/Round-off_error)
-    /// using [Kahan's algorithm](https://en.wikipedia.org/wiki/Kahan_summation_algorithm) or using
-    /// [Pairwise summation](https://en.wikipedia.org/wiki/Pairwise_summation). If the number of datapoints is
-    /// small, then there should be little issue with the accumulation of
-    /// [round-off error](https://en.wikipedia.org/wiki/Round-off_error) and 32-bit floats should work
-    /// without any concern.
+    /// Note that the residual error is returned as a 64-bit float. This allows the residual to be used for things
+    /// other than sample consensus, such as optimization problems. For sample consensus, the residual should
+    /// only be used to ensure it is within a threshold that roughly distinguishes inliers from outliers.
     ///
-    /// Here are some helpers to allow you to perform less lossy summation:
-    ///
-    /// - [Kahan Summation](https://crates.io/crates/kahan)
-    /// - [Pairwise Summation](https://docs.rs/itertools/0.8.0/itertools/trait.Itertools.html#method.tree_fold1)
-    ///     - `let sum = estimator.residuals(data).tree_fold1(|a, b| a + b).unwrap_or(0.0)`
-    ///
-    /// If all you wish to do is filter data points out if they are above a certian threshold of error
-    /// then the 32-bit float's precision will be no issue for you. Most fast RANSAC algorithms
-    /// utilize this approach and score models based only on their inlier count.
-    fn residual(&self, data: &Data) -> f32;
+    /// The returned residual should always be positive, with a lower residual being associated with higher
+    /// probability of being an inlier rather than an outlier.
+    fn residual(&self, data: &Data) -> f64;
 }
 
 /// An `Estimator` is able to create a model that best fits a set of data.
