@@ -1,12 +1,12 @@
 [package]
 name = "sample-consensus"
-version = "0.2.0"
+version = "1.0.0"
 authors = ["Geordon Worley <vadixidav@gmail.com>"]
 edition = "2018"
 description = "Abstractions for sample consensus algorithms such as RANSAC"
 documentation = "https://docs.rs/sample-consensus/"
-repository = "https://github.com/rust-photogrammetry/sample-consensus"
+repository = "https://github.com/rust-cv/sample-consensus"
 keywords = ["ransac", "sample", "consensus", "model", "estimator"]
-categories = ["algorithms", "no-std", "science", "science::robotics", "simulation"]
+categories = ["algorithms", "no-std", "science", "science::robotics", "computer-vision"]
 license = "MIT"
 readme = "README.md"
