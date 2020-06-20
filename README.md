@@ -10,11 +10,11 @@
 [di]: https://docs.rs/sample-consensus/badge.svg
 [dl]: https://docs.rs/sample-consensus/
 
-[lo]: https://tokei.rs/b1/github/rust-photogrammetry/sample-consensus?category=code
+[lo]: https://tokei.rs/b1/github/rust-cv/sample-consensus?category=code
 
 `sample-consensus` provides abstractions for sample consensus algorithms such as RANSAC.
 
-An example of how to use these abstractions is present in the [ARRSAC repository](https://github.com/rust-photogrammetry/arrsac).
+An example of how to use these abstractions is present in the [ARRSAC repository](https://github.com/rust-cv/arrsac).
 
 This allows one to create a RANSAC algorithm (`Consensus` or `MultiConsensus`) that is independent of the underlying system.
 You can also create a `Model` and an `Estimator` for different systems. An `Estimator` only needs to estimate a model
