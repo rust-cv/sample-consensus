@@ -16,6 +16,8 @@
 
 An example of how to use these abstractions is present in the [ARRSAC repository](https://github.com/rust-cv/arrsac).
 
+When using `sample-consensus`, make sure that you shuffle your input data. You can use [`SliceRandom::shuffle`](https://docs.rs/rand/0.8.4/rand/seq/trait.SliceRandom.html#tymethod.shuffle) to do this.
+
 This allows one to create a RANSAC algorithm (`Consensus` or `MultiConsensus`) that is independent of the underlying system.
 You can also create a `Model` and an `Estimator` for different systems. An `Estimator` only needs to estimate a model
 from a subset of some data. With this system, you can quickly define an `Estimator` based on an algorithm, like

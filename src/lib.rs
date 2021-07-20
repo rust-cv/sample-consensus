@@ -51,6 +51,9 @@ where
     /// Takes a slice over the data and an estimator instance.
     /// It returns `None` if no valid model could be found for the data and
     /// `Some` if a model was found.
+    ///
+    /// Make sure to shuffle your `data` before calling this. You can use
+    /// [`SliceRandom::shuffle`](https://docs.rs/rand/0.8.4/rand/seq/trait.SliceRandom.html#tymethod.shuffle).
     fn model<I>(&mut self, estimator: &E, data: I) -> Option<E::Model>
     where
         I: Iterator<Item = Data> + Clone;
@@ -58,6 +61,9 @@ where
     /// Takes a slice over the data and an estimator instance.
     /// It returns `None` if no valid model could be found for the data and
     /// `Some` if a model was found. It includes the inliers consistent with the model.
+    ///
+    /// Make sure to shuffle your `data` before calling this. You can use
+    /// [`SliceRandom::shuffle`](https://docs.rs/rand/0.8.4/rand/seq/trait.SliceRandom.html#tymethod.shuffle).
     fn model_inliers<I>(&mut self, estimator: &E, data: I) -> Option<(E::Model, Self::Inliers)>
     where
         I: Iterator<Item = Data> + Clone;
@@ -79,6 +85,9 @@ where
     /// It returns an iterator over all of the models and all of the inliers
     /// that are consistent with that model. Every point that is not an
     /// inlier of a given model is considered an outlier of that model.
+    ///
+    /// Make sure to shuffle your `data` before calling this. You can use
+    /// [`SliceRandom::shuffle`](https://docs.rs/rand/0.8.4/rand/seq/trait.SliceRandom.html#tymethod.shuffle).
     fn models<I>(&mut self, estimator: &E, data: I) -> Self::Models
     where
         I: Iterator<Item = Data> + Clone;
